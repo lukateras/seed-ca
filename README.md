@@ -1,5 +1,3 @@
-# Seed CA
-
 ## Usage
 
 This program was designed to build Android app releases on CI without having to
