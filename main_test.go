@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/base64"
+	"golang.org/x/crypto/blake2b"
 	"io/ioutil"
 	"os"
-	"golang.org/x/crypto/blake2b"
 	"testing"
 )
 
@@ -14,8 +14,8 @@ func testFile(t *testing.T, name, expectedHash string) {
 		t.Fatal(err)
 	}
 
-	rawHash := blake2b.Sum512(f)
-	hash := base64.RawStdEncoding.EncodeToString(rawHash[:])
+	hashBytes := blake2b.Sum512(f)
+	hash := base64.RawStdEncoding.EncodeToString(hashBytes[:])
 
 	if hash != expectedHash {
 		t.Errorf(`
