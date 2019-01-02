@@ -4,28 +4,26 @@ This program was designed to build Android app releases on CI without having to
 store and manage any certificates or private keys.
 
 Instead, certificate authority is derived from `SEED_CA` environment variable,
-which is an arbitrary string. You can generate one with, for example:
-
-```
-head -c 30 /dev/urandom | base64
-```
+which is an arbitrary string. You can generate one with, for example,
+`head -c 30 /dev/urandom | base64`.
 
 Running the program with the environment variable set will deterministically
 spawn PEM-encoded `ca.key` and `ca.crt` files in the current working directory
-and print file names to standard output.
+and print `ca.key\nca.crt\n` to standard output.
 
 ## Rationale
 
 Most CI dispatchers support protected variables, environment variables that can
 only be seen by people with ownership rights over designated repository.
 
-As a rule, safely provisioning a file to a stateless environment such as CI would
-require setting protected variables anyway, but the sheer complexity of that alone
-is going to be a major fork-hostile power.
+Safely provisioning a file to a stateless environment such as CI would require
+setting protected variables anyway, but the sheer complexity and coupling
+potential of that alone is going to be a major centralizing/fork-hostile power.
 
-This project makes forks as friendly as possible, encapsulating all of effective
-build state into a concrete string, with no additional setup involved other than
-setting it to some (any) value.
+This work is part of the effort to make infrastructure concrete, stateless,
+and forkable just like projects that it serves. All effective build state is
+encapsulated into a tiny concrete string, with no additional setup involved
+other than setting it to some (any) value.
 
 ## Cryptography
 
@@ -51,7 +49,7 @@ EdDSA over Curve25519 is a way more misimplementation-resistant signature scheme
 than ECDSA over any of the NIST curves. Please prefer the former when designing
 new formats and protocols.
 
-ECDSA was chosen because it is has better compatibility, especially with older
+ECDSA was chosen because it has better compatibility, especially with older
 software. Also, this program being non-interactive and deterministic protects
 against most attack vectors on ECDSA.
 
@@ -70,20 +68,36 @@ certificate fields. If you think that applies to your use case, fork this repo,
 change parameters in `main.go` file, commit, and push to something like GitHub
 or GitLab.
 
+## Precautions
+
+Please make sure to back up your seed. If you lose it, it won't be possible to
+push any updates to Android apps that were signed with the lost seed, other uses
+may share similar consequences.
+
+Sign with smartcards for high-threat models. Be aware that whoever hosts CI
+dispatcher and builders will be able to access the seed and forge signatures.
+
 ## Stability
 
-*This program has not stabilized yet. Once it is, it will be moved from unstable
-namespace and will be effectively set in stone.*
+*This program has not stabilized yet. Once it does, it will be moved from
+`unstable` namespace and will be effectively set in stone.*
 
 Output of this program must never change between versions. If that ever happens,
 please file a bug report. Non-compatible versions of this program will go to a
 separate repository.
 
-`golang.org/x/crypto` dependency is pinned down. If any breaking changes happen
-in Go standard library, which is the only unpinned dependency, we will vendor in
-the last good version of required packages.
+`golang.org/x/crypto` is pinned down. If any breaking changes happen to Go
+standard library, which is the only effectively unpinned dependency, the latest
+good versions of required broken packages will be vendored into this project.
 
-Most likely thing that might warrant vendoring is `crypto/ecdsa` key generation.
+The most likely thing to warrant vendoring is `crypto/ecdsa` key generation.
+
+## Adopters
+
+This is a list of projects that use Seed CA (if you do, send a merge request):
+
+- [Noise](https://gitlab.com/prism-break/noise), rebranded and deblobbed Signal
+client for Android (used to sign the `.apk` and to authenticate F-Droid repo)
 
 ## Thanks
 
