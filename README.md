@@ -1,4 +1,4 @@
-## Usage
+## Overview
 
 This program was designed to build Android app releases on CI without having to
 store and manage any certificates or private keys.
